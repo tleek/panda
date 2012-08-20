@@ -812,22 +812,23 @@ inline void printloc(uintptr_t val){
         fprintf(memlog, "%d\n", CC_DST_REG);
     } else if (val == ((uintptr_t)env) + offsetof(CPUX86State, eip)){
         fprintf(memlog, "%d\n", EIP_REG);
-    } /*else if (val == ((size_t)cpu_single_env) + offsetof(CPUX86State,
-        cr[0])){ 
-        printf("reg cr0\n");
-    } else if (val == ((size_t)cpu_single_env) + offsetof(CPUX86State,
-        cr[1])){ 
-        printf("reg cr1\n");
-    } else if (val == ((size_t)cpu_single_env) + offsetof(CPUX86State,
-        cr[2])){ 
-        printf("reg cr2\n");
-    } else if (val == ((size_t)cpu_single_env) + offsetof(CPUX86State,
-        cr[3])){ 
-        printf("reg cr3\n");
-    } else if (val == ((size_t)cpu_single_env) + offsetof(CPUX86State,
-        cr[4])){ 
-        printf("reg cr4\n");
-    }*/
+    }
+
+    else if ((val >= (((uintptr_t)env) + offsetof(CPUX86State, xmm_regs)))
+            && (val < (((uintptr_t)env) + offsetof(CPUX86State, xmm_regs)
+                + sizeof(XMMReg) * CPU_NB_REGS))){
+        fprintf(memlog, "INSIDE XMM/MMX REGS\n");
+    }
+    else if ((val >= (((uintptr_t)env) + offsetof(CPUX86State, xmm_t0)))
+            && (val < (((uintptr_t)env) + offsetof(CPUX86State, xmm_t0)
+                + sizeof(XMMReg)))){
+        fprintf(memlog, "INSIDE XMM_T0\n");
+    }
+    else if ((val >= (((uintptr_t)env) + offsetof(CPUX86State, mmx_t0)))
+            && (val < (((uintptr_t)env) + offsetof(CPUX86State, mmx_t0)
+                + sizeof(MMXReg)))){
+        fprintf(memlog, "INSIDE MMX_T0\n");
+    }
 
     // exception occurred
     else if (val == 0xDEADBEEF){
@@ -948,54 +949,24 @@ inline void printloc(uintptr_t val){
 
 #endif //TARGET_ARM
 
-void printdynval(uintptr_t val, int store){
+/*
+ * TODO: mesh with laredo.h for logop enum
+ */
+void printdynval(uintptr_t val, int op){
     if (!memlog){
         memlog = fopen("/tmp/llvm-memlog.log", "w");
         setbuf(memlog, NULL);
-        //char* buffer = (char*)malloc(50000000);
-        //setvbuf(memlog, buffer, _IOFBF, 50000000);
     }
-
-    /*if (val == 0xDEADBEEF){
-        fprintf(memlog, "deadbeef\n");
-    }*/
-
-    //fprintf(memlog, "QEMU CPU state is at: %lu\n", (size_t)cpu_single_env);
-    if (store == 1){
+    if (op == 1){
         fprintf(memlog, "store ");
         printloc(val);
-        /*if (val == ((size_t)cpu_single_env) +
-            offsetof(CPUX86State, regs[R_EAX])){
-            printf("eax\n");
-        }
-        else {
-            printf("not eax\n");
-        }*/
-        /*if (val >= (size_t)cpu_single_env && val < ((size_t)cpu_single_env +
-            sizeof(*cpu_single_env))){
-            fprintf(memlog, "store cpu %u\n", val);
-        }
-        else {
-            fprintf(memlog, "store %u\n", val);
-        }*/
-    } else if (store == 0) {
+    } else if (op == 0){
         fprintf(memlog, "load ");
         printloc(val);
-
-        /*if (val == ((size_t)cpu_single_env) +
-            offsetof(CPUX86State, regs[R_EAX])){
-            printf("eax\n");
-        }*/
-
-        /*if (val >= (size_t)cpu_single_env && val < ((size_t)cpu_single_env +
-            sizeof(*cpu_single_env))){
-            fprintf(memlog, "load cpu %u\n", val);
-        }
-        else {
-            fprintf(memlog, "load %u\n", val);
-        }*/
-    } else if (store == 2) {
+    } else if (op == 2){
         fprintf(memlog, "condbranch %lu\n", val);
+    } else if (op == 3){
+        fprintf(memlog, "select %lu\n", val);
     }
 }
 
@@ -1135,9 +1106,9 @@ int TCGLLVMContextPrivate::generateOperation(int opc, const TCGArg *args)
             tcg_target_ulong helperAddrC = (tcg_target_ulong)
                    cast<ConstantInt>(helperAddr)->getZExtValue();
             assert(helperAddrC);
-            //printf("HELPER %s\n", tcg_helper_get_name(m_tcgContext,
-            //    (void*)helperAddrC));
-            //fflush(stdout);
+            printf("HELPER %s\n", tcg_helper_get_name(m_tcgContext,
+                (void*)helperAddrC));
+            fflush(stdout);
 
             const char *helperName = tcg_helper_get_name(m_tcgContext,
                                                          (void*) helperAddrC);
