@@ -1,5 +1,6 @@
 #include "config.h"
 #include "qemu-common.h"
+#include "monitor.h"
 #include "cpu.h"
 
 #include "panda_plugin.h"
@@ -48,6 +49,30 @@ int after_block_callback(CPUState *env, TranslationBlock *tb, TranslationBlock *
     return 1;
 }
 
+// Monitor callback. This gets a string that you can then parse for
+// commands. Could do something more complex here, e.g. getopt.
+int monitor_callback(Monitor *mon, const char *cmd) {
+#ifdef CONFIG_SOFTMMU
+    char *cmd_work = g_strdup(cmd);
+    char *word;
+    word = strtok(cmd_work, " ");
+    do {
+        if (strncmp("help", word, 4) == 0) {
+            monitor_printf(mon,
+                "sample plugin help:\n"
+                "  sample_foo: do the foo action\n"
+            );
+        }
+        else if (strncmp("sample_foo", word, 10) == 0) {
+            printf("Doing the foo action\n");
+            monitor_printf(mon, "I did the foo action!\n");
+        }
+    } while((word = strtok(NULL, " ")) != NULL);
+    g_free(cmd_work);
+#endif
+    return 1;
+}
+
 bool init_plugin(void *self) {
     panda_cb pcb;
 
@@ -57,6 +82,8 @@ bool init_plugin(void *self) {
     panda_register_callback(self, PANDA_CB_AFTER_BLOCK, pcb);
     pcb.before_block = before_block_callback;
     panda_register_callback(self, PANDA_CB_BEFORE_BLOCK, pcb);
+    pcb.monitor = monitor_callback;
+    panda_register_callback(self, PANDA_CB_MONITOR, pcb);
 
     plugin_log = fopen("sample_tblog.txt", "w");    
     if(!plugin_log) return false;
@@ -65,5 +92,6 @@ bool init_plugin(void *self) {
 
 void uninit_plugin(void *self) {
     printf("Unloading sample plugin.\n");
+    fflush(plugin_log);
     fclose(plugin_log);
 }
