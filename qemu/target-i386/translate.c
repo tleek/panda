@@ -41,7 +41,6 @@
 #include "disas.h"
 #include "tcg-op.h"
 
-#include "panda_memlog.h"
 #include "rr_log.h"
 
 #include "helper.h"
@@ -8111,6 +8110,15 @@ void gen_intermediate_code_pc(CPUState *env, TranslationBlock *tb)
 void restore_state_to_opc(CPUState *env, TranslationBlock *tb, int pc_pos)
 {
     int cc_op;
+
+#ifdef CONFIG_LLVM
+#ifdef CONFIG_LLVM_TRACE
+    if (execute_llvm && trace_llvm){
+        //printf("FAULT\n"); //rwhelan - indicate this for dynamic log
+        printdynval(0xDEADBEEF, 0);
+    }
+#endif
+#endif
 
 #ifdef DEBUG_DISAS
     if (qemu_loglevel_mask(CPU_LOG_TB_OP)) {
