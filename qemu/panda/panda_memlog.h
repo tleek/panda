@@ -1,3 +1,17 @@
+/* PANDABEGINCOMMENT
+ * 
+ * Authors:
+ *  Tim Leek               tleek@ll.mit.edu
+ *  Ryan Whelan            rwhelan@ll.mit.edu
+ *  Joshua Hodosh          josh.hodosh@ll.mit.edu
+ *  Michael Zhivich        mzhivich@ll.mit.edu
+ *  Brendan Dolan-Gavitt   brendandg@gatech.edu
+ * 
+ * This work is licensed under the terms of the GNU GPL, version 2. 
+ * See the COPYING file in the top-level directory. 
+ * 
+PANDAENDCOMMENT */
+
 #ifndef PANDA_MEMLOG_H
 #define PANDA_MEMLOG_H
 
@@ -10,7 +24,7 @@
 void printloc(uintptr_t);
 void printdynval(uintptr_t, int);
 void printramaddr(uintptr_t, int);
-void open_memlog(void);
+void open_memlog(char *path);
 void close_memlog(void);
 
 /*

@@ -1,3 +1,16 @@
+/* PANDABEGINCOMMENT
+ * 
+ * Authors:
+ *  Tim Leek               tleek@ll.mit.edu
+ *  Ryan Whelan            rwhelan@ll.mit.edu
+ *  Joshua Hodosh          josh.hodosh@ll.mit.edu
+ *  Michael Zhivich        mzhivich@ll.mit.edu
+ *  Brendan Dolan-Gavitt   brendandg@gatech.edu
+ * 
+ * This work is licensed under the terms of the GNU GPL, version 2. 
+ * See the COPYING file in the top-level directory. 
+ * 
+PANDAENDCOMMENT */
 
 /*
  * This function pass can be used in a plugin for generated code to change LLVM
@@ -55,9 +68,17 @@ bool PandaCallMorphFunctionPass::runOnFunction(Function &F){
 
 void PandaHelperCallVisitor::visitCallInst(CallInst &I){
     assert(I.getCalledFunction());
-    if (I.getCalledFunction()->isIntrinsic() ||
-            I.getCalledFunction()->getName().equals("log_dynval")){
-        return; // Ignore intrinsics and declarations
+    if (I.getCalledFunction()->isIntrinsic()
+            || I.getCalledFunction()->getName().equals("log_dynval")
+            || I.getCalledFunction()->getName().equals("__ldb_mmu_panda")
+            || I.getCalledFunction()->getName().equals("__ldl_mmu_panda")
+            || I.getCalledFunction()->getName().equals("__ldw_mmu_panda")
+            || I.getCalledFunction()->getName().equals("__ldq_mmu_panda")
+            || I.getCalledFunction()->getName().equals("__stb_mmu_panda")
+            || I.getCalledFunction()->getName().equals("__stl_mmu_panda")
+            || I.getCalledFunction()->getName().equals("__stw_mmu_panda")
+            || I.getCalledFunction()->getName().equals("__stq_mmu_panda")){
+        return; // Ignore intrinsics, declarations, and memory functions
     }
     
     // Call LLVM version of helper

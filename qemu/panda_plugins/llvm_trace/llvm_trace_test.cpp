@@ -1,3 +1,16 @@
+/* PANDABEGINCOMMENT
+ * 
+ * Authors:
+ *  Tim Leek               tleek@ll.mit.edu
+ *  Ryan Whelan            rwhelan@ll.mit.edu
+ *  Joshua Hodosh          josh.hodosh@ll.mit.edu
+ *  Michael Zhivich        mzhivich@ll.mit.edu
+ *  Brendan Dolan-Gavitt   brendandg@gatech.edu
+ * 
+ * This work is licensed under the terms of the GNU GPL, version 2. 
+ * See the COPYING file in the top-level directory. 
+ * 
+PANDAENDCOMMENT */
 
 /*
  * This test recreates an entire trace (including all helper functions) in LLVM
@@ -86,6 +99,15 @@ void TestInstVisitor::visitReturnInst(ReturnInst &I){
     TFP->setRetFlag(true);
 }
 
+/*
+ * A lot of helper functions end with unreachable instructions, so we treat them
+ * like return instructions.
+ */
+void TestInstVisitor::visitUnreachable(UnreachableInst &I){
+    //printf("ret\n");
+    TFP->setRetFlag(true);
+}
+
 void TestInstVisitor::visitSelectInst(SelectInst &I){
     if (except){
         return;
@@ -105,6 +127,38 @@ void TestInstVisitor::visitCallInst(CallInst &I){
     if (except){
         return;
     }
+    
+    if ((I.getCalledFunction()->getName() == "__ldb_mmu_panda")
+        || (I.getCalledFunction()->getName() == "__ldl_mmu_panda")
+        || (I.getCalledFunction()->getName() == "__ldw_mmu_panda")
+        || (I.getCalledFunction()->getName() == "__ldq_mmu_panda")){
+
+        DynValEntry entry;
+        size_t n = fread(&entry, sizeof(DynValEntry), 1, dlog);
+        if (entry.entrytype == EXCEPTIONENTRY){
+            except = true;
+            return;
+        }
+        assert((entry.entrytype == ADDRENTRY)
+            && (entry.entry.memaccess.op == LOAD));
+        return;
+    }
+    if ((I.getCalledFunction()->getName() == "__stb_mmu_panda")
+        || (I.getCalledFunction()->getName() == "__stl_mmu_panda")
+        || (I.getCalledFunction()->getName() == "__stw_mmu_panda")
+        || (I.getCalledFunction()->getName() == "__stq_mmu_panda")){
+    
+        DynValEntry entry;
+        size_t n = fread(&entry, sizeof(DynValEntry), 1, dlog);
+        if (entry.entrytype == EXCEPTIONENTRY){
+            except = true;
+            return;
+        }
+        assert((entry.entrytype == ADDRENTRY)
+            && (entry.entry.memaccess.op == STORE));
+        return;
+    }
+
     if ((I.getCalledFunction()->getName() == "log_dynval")
         || (I.getCalledFunction()->isDeclaration())
         || (I.getCalledFunction()->isIntrinsic())){

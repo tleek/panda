@@ -369,12 +369,14 @@ void qemu_console_copy(DisplayState *ds, int src_x, int src_y,
 
 /* sdl.c */
 void sdl_display_init(DisplayState *ds, int full_screen, int no_frame);
+void sdl_android_display_init(DisplayState *ds, int full_screen, int no_frame);
 
 /* cocoa.m */
 void cocoa_display_init(DisplayState *ds, int full_screen);
 
 /* vnc.c */
 void vnc_display_init(DisplayState *ds);
+void vnc_android_display_init(DisplayState *ds);
 void vnc_display_close(DisplayState *ds);
 int vnc_display_open(DisplayState *ds, const char *display);
 void vnc_display_add_client(DisplayState *ds, int csock, int skipauth);
