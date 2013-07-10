@@ -3,38 +3,21 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <cpuid.h>
+#include <inttypes.h>
+#include "panda_mark.h"
 
-void label_buffer(unsigned, unsigned);
-void query_buffer(unsigned, unsigned, unsigned);
+void label_buffer(unsigned long, unsigned long);
+void query_buffer(unsigned long, unsigned long);
 
 int main(int argc, char* argv[]) {
-  unsigned buffer = 1;
+  unsigned long buffer = 1;
 
-  label_buffer(buffer, sizeof(buffer));
-  //query_buffer(&buffer, sizeof(buffer), 0);
-  //vm_guest_util_done();
+  label_buffer((uint64_t)&buffer, sizeof(unsigned long));
+  query_buffer((uint64_t)&buffer, sizeof(unsigned long));
 
   printf("Completed successfully\n");
 
   return 0;
 }
 
-void label_buffer(unsigned buf, unsigned buf_len) {
-  unsigned level = 0;
-  unsigned eax = 0;
-  unsigned ebx;
-  unsigned ecx;
-  unsigned edx;
-  //unsigned ebx = buf;
-  //unsigned ecx = buf_len;
-  //unsigned edx = 0;
 
-  __get_cpuid(level, &eax, &ebx, &ecx, &edx);
-  printf("Max instruction ID: %i\n", eax);
-  return;
-}
-
-void query_buffer(unsigned buf, unsigned len, unsigned offset) {
-  return;
-}
